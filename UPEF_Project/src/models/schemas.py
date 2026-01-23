@@ -92,6 +92,71 @@
 
 # Version 1.3
 
+# from typing import List, Optional, Any
+# from pydantic import BaseModel, Field
+
+# # --- Sub-Models ---
+
+# class LanguageDetails(BaseModel):
+#     detected_language: str
+#     transliterated: Optional[str] = None
+
+# class DomainDetails(BaseModel):
+#     domains: List[str]
+
+# class NerDetails(BaseModel):
+#     PERSON: List[str] = []
+#     LOCATION: List[str] = []
+#     ORGANIZATION: List[str] = []
+#     EVENT: List[str] = []
+#     PRODUCT: List[str] = []
+
+# class DateDetails(BaseModel):
+#     original_text: str
+#     standardized_date: str
+
+# class EventDateDetails(BaseModel):
+#     dates_found: List[DateDetails] = []
+#     gatherings_participants: List[str] = []
+
+# class RelevancyDetails(BaseModel):
+#     relevant_to: List[str]
+#     confidence: float
+#     level: str
+
+# class TranslationDetails(BaseModel):
+#     translated_text: Optional[str] = None
+#     justification: str
+#     confidence: float
+
+# class PerformanceDetails(BaseModel):
+#     response_time_sec: float
+#     throughput_ops_per_sec: float
+#     memory_usage_mb: float
+#     cpu_utilization_percent: float
+
+# # --- Master Report Schema ---
+
+# class IntelReport(BaseModel):
+#     # We use 'alias' to map the JSON keys (1_...) to Python variables
+#     language: LanguageDetails = Field(..., alias="1_language_detection")
+#     domain: DomainDetails = Field(..., alias="2_domain_id")
+#     ner: NerDetails = Field(..., alias="3_ner")
+#     sentiment: str = Field(..., alias="4_sentiment")
+#     event_date: EventDateDetails = Field(..., alias="5_event_date")
+#     country_id: str = Field(default="Indian", alias="6_country_id")
+#     relevancy: RelevancyDetails = Field(..., alias="7_relevancy")
+#     translation: TranslationDetails = Field(..., alias="8_translation")
+#     summary: str = Field(..., alias="9_summary")
+    
+#     # This field is optional in the AI response because Python calculates it
+#     performance: Optional[PerformanceDetails] = Field(None, alias="10_performance_metrics")
+
+#     class Config:
+#         populate_by_name = True
+
+# Version 1.4
+
 from typing import List, Optional, Any
 from pydantic import BaseModel, Field
 
@@ -149,7 +214,6 @@ class IntelReport(BaseModel):
     translation: TranslationDetails = Field(..., alias="8_translation")
     summary: str = Field(..., alias="9_summary")
     
-    # This field is optional in the AI response because Python calculates it
     performance: Optional[PerformanceDetails] = Field(None, alias="10_performance_metrics")
 
     class Config:
