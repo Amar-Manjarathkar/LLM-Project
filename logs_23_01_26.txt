@@ -18,3 +18,50 @@ SerializationVersion: 1.1.0.1
 **********************
 Transcript started, output file is logs_23_01_26.txt
 ]633;D;0]633;A]633;P;Cwd=D:\x5cDevil\x5cFrameworkPS D:\Devil\Framework> ]633;B
+(venv) & D:/Devil/Framework/UPEF_Project/venv/Scripts/python.exe d:/Devil/Framework/UPEF_Project/test_pipeline.py
+    "cpu_utilization_percent": 0.0
+  }
+}
+================================================================================
+⏱️  TIMING: AI Inference: 223.1764s | Memory: 52.8MB
+================================================================================
+
+[llama3.1:8b] ➤ !exit
+]633;D;0]633;A]633;P;Cwd=D:\x5cDevil\x5cFrameworkPS D:\Devil\Framework> ]633;B
+(venv) git status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   UPEF_Project/src/models/engine.py
+        modified:   UPEF_Project/src/models/schemas.py
+        modified:   UPEF_Project/test_pipeline.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        logs_23_01_26.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+]633;D;0]633;A]633;P;Cwd=D:\x5cDevil\x5cFrameworkPS D:\Devil\Framework> ]633;B
+(venv) git add .
+
+]633;D;0]633;A]633;P;Cwd=D:\x5cDevil\x5cFrameworkPS D:\Devil\Framework> ]633;B
+(venv) git commit -m "version_control with fine tuned prompts "
+[main 179fc2a] version_control with fine tuned prompts
+ 4 files changed, 1041 insertions(+), 95 deletions(-)
+ create mode 100644 logs_23_01_26.txt
+]633;D;0]633;A]633;P;Cwd=D:\x5cDevil\x5cFrameworkPS D:\Devil\Framework> ]633;B
+(venv) git push -u origin main
+Compressing objects: 100% (9/9), done.
+Writing objects: 100% (9/9), 12.87 KiB | 3.22 MiB/s, done.
+Total 9 (delta 3), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (3/3), completed with 3 local objects.
+To https://github.com/Amar-Manjarathkar/LLM-Project.git
+   6df0c52..179fc2a  main -> main
+branch 'main' set up to track 'origin/main'.
+]633;D;0]633;A]633;P;Cwd=D:\x5cDevil\x5cFrameworkPS D:\Devil\Framework> ]633;B
+(venv) exit
+**********************
+Windows PowerShell transcript end
+End time: 20260123203103
+**********************
