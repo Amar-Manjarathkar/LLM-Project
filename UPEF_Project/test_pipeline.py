@@ -241,136 +241,460 @@
 # if __name__ == "__main__":
 #     main()
 
-# Version 1.5
+# Version 1.5 # 3 shot strategy # best so far
 
-import time
+# import time
+# import sys
+# import threading
+# import itertools
+# from src.cleaning.cleaner import IntelCleaner
+# from src.models.engine import IntelligenceEngine
+
+# # --- UI UTILITIES ---
+
+# class LoadingSpinner:
+#     """Runs a spinner and timer in a separate thread to keep UI alive."""
+#     def __init__(self):
+#         self.stop_event = threading.Event()
+#         self.status_message = "Initializing..."
+#         self.start_time = 0
+#         self.thread = None
+
+#     def _spin(self):
+#         spinner = itertools.cycle(['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'])
+#         while not self.stop_event.is_set():
+#             elapsed = time.time() - self.start_time
+#             sys.stdout.write(f"\r{next(spinner)} [{elapsed:.1f}s] {self.status_message}   ")
+#             sys.stdout.flush()
+#             time.sleep(0.1)
+
+#     def start(self):
+#         self.stop_event.clear()
+#         self.start_time = time.time()
+#         self.thread = threading.Thread(target=self._spin)
+#         self.thread.start()
+
+#     def update_status(self, msg):
+#         """Updates the text next to the spinner"""
+#         self.status_message = msg
+
+#     def stop(self):
+#         self.stop_event.set()
+#         if self.thread:
+#             self.thread.join()
+#         sys.stdout.write("\r" + " "*60 + "\r") # Clear line
+#         sys.stdout.flush()
+
+# # --- MAIN LOGIC ---
+
+# def select_model(engine):
+#     print("\n🔍 Scanning for available Ollama models...")
+#     models = engine.get_available_models()
+#     if not models:
+#         print("❌ No models found!")
+#         return
+    
+#     print(f"\nAvailable Models:")
+#     for idx, name in enumerate(models, 1):
+#         marker = "(*)" if name == engine.model else "   "
+#         print(f"{idx}. {marker} {name}")
+    
+#     choice = input("\nSelect model number (Enter to cancel): ").strip()
+#     if choice.isdigit() and 0 < int(choice) <= len(models):
+#         engine.set_model(models[int(choice)-1])
+#     else:
+#         print("🚫 Cancelled.")
+
+# def main():
+#     print("⚙️  Initializing Engine...")
+#     cleaner = IntelCleaner()
+#     # Ensure qwen2.5:7b is pulled, or fallback to what you have
+#     engine = IntelligenceEngine(model_name="qwen2.5:7b") 
+    
+#     print("-" * 80)
+#     print("🔎 UNIFIED PROMPT FRAMEWORK - INTERACTIVE CONSOLE")
+#     print("Commands: Type text to analyze | !model to switch | !exit to quit")
+#     print("-" * 80)
+
+#     spinner_ui = LoadingSpinner()
+
+#     while True:
+#         user_input = input(f"\n[{engine.model}] ➤ ").strip()
+        
+#         if not user_input: continue
+#         if user_input.lower() == "!exit": break
+#         if user_input.lower() == "!model": 
+#             select_model(engine)
+#             continue
+
+#         # --- PROCESS ---
+#         report = None
+#         error = None
+
+#         # Wrapper to run engine in thread
+#         def run_analysis():
+#             nonlocal report, error
+#             try:
+#                 # We pass the spinner's update method as a callback
+#                 report = engine.analyze(
+#                     clean_text, 
+#                     status_callback=spinner_ui.update_status
+#                 )
+#             except Exception as e:
+#                 error = e
+
+#         try:
+#             # 1. Cleaning
+#             print("🧹 Cleaning text...")
+#             clean_text = cleaner.process(user_input)
+
+#             # 2. AI Inference (Threaded)
+#             spinner_ui.start()
+#             analysis_thread = threading.Thread(target=run_analysis)
+#             analysis_thread.start()
+#             analysis_thread.join() # Wait for it to finish
+#             spinner_ui.stop()
+
+#             # 3. Result Display
+#             if error:
+#                 print(f"❌ ERROR: {error}")
+#             elif report:
+#                 print("\n" + "="*30 + " 📄 INTELLIGENCE REPORT " + "="*30)
+#                 print(report.model_dump_json(by_alias=True, indent=2))
+#                 print("="*80)
+                
+#                 # Timing
+#                 perf = report.performance
+#                 print(f"⏱️  TIMING: AI Inference: {perf.response_time_sec}s | Memory: {perf.memory_usage_mb}MB")
+#                 print("="*80)
+
+#         except KeyboardInterrupt:
+#             spinner_ui.stop()
+#             print("\n🚫 Operation Interrupted.")
+
+# if __name__ == "__main__":
+#     main()
+
+# Version 1.7
+# import sys
+# import threading
+# import time
+# import itertools
+# import ollama
+# from src.cleaning.cleaner import IntelCleaner
+# from src.models.engine import IntelligenceEngine
+
+# class Spinner:
+#     """Simple terminal spinner for visual feedback."""
+#     def __init__(self):
+#         self.spinner = itertools.cycle(['⣾', '⣽', '⣻', '⢿', '⡿', '⣟', '⣯', '⣷'])
+#         self.running = False
+#         self.status = "Initializing..."
+#         self._thread = None
+
+#     def start(self):
+#         self.running = True
+#         self._thread = threading.Thread(target=self._animate)
+#         self._thread.start()
+
+#     def stop(self):
+#         self.running = False
+#         if self._thread:
+#             self._thread.join()
+#         sys.stdout.write('\r' + ' ' * 60 + '\r') # Clear line
+#         sys.stdout.flush()
+
+#     def update_status(self, new_status):
+#         self.status = new_status
+
+#     def _animate(self):
+#         while self.running:
+#             sys.stdout.write(f'\r{next(self.spinner)} {self.status}')
+#             sys.stdout.flush()
+#             time.sleep(0.1)
+
+# def get_available_models():
+#     """Fetches list of models from Ollama."""
+#     try:
+#         models_info = ollama.list()
+#         # Extract model names from the dictionary response
+#         return [m['name'] for m in models_info['models']]
+#     except Exception as e:
+#         print(f"\n❌ Error fetching models: {e}")
+#         return []
+
+# def select_model_menu(current_model):
+#     """Displays the model selection menu."""
+#     print("\n🔍 Scanning for available Ollama models...\n")
+#     models = get_available_models()
+    
+#     if not models:
+#         print("No models found via Ollama API.")
+#         return None
+
+#     print("Available Models:")
+#     for idx, name in enumerate(models, 1):
+#         marker = "(*)" if name == current_model else "   "
+#         print(f"{idx}. {marker} {name}")
+    
+#     print("")
+#     choice = input("Select model number (Enter to cancel): ").strip()
+    
+#     if not choice.isdigit():
+#         return None
+    
+#     choice_idx = int(choice) - 1
+#     if 0 <= choice_idx < len(models):
+#         return models[choice_idx]
+    
+#     print("Invalid selection.")
+#     return None
+
+# def run_interactive_pipeline():
+#     # 1. Initialize Default Configuration
+#     current_model = "qwen2.5:32b" # Defaulting to your high-RAM model
+#     cleaner = IntelCleaner()
+#     engine = IntelligenceEngine(model_name=current_model)
+#     spinner_ui = Spinner()
+
+#     print("\n" + "="*60)
+#     print("🇮🇳  INDIAN INTELLIGENCE PIPELINE (v1.7) - DYNAMIC MODE")
+#     print("="*60)
+#     print(f"Commands:\n • Type '!model' to switch AI models.\n • Type 'exit' to quit.\n")
+
+#     while True:
+#         # Dynamic Prompt showing current model
+#         try:
+#             user_input = input(f"[{current_model}] ➤ ").strip()
+#         except KeyboardInterrupt:
+#             print("\nShutting down.")
+#             break
+
+#         # --- COMMAND HANDLING ---
+#         if user_input.lower() in ['exit', 'quit']:
+#             print("Shutting down.")
+#             break
+        
+#         if user_input.lower() == '!model':
+#             new_model = select_model_menu(current_model)
+#             if new_model and new_model != current_model:
+#                 current_model = new_model
+#                 print(f"\n🔄 Switching Engine to {current_model}...")
+#                 engine = IntelligenceEngine(model_name=current_model)
+#                 print("✅ Model updated.\n")
+#             continue
+
+#         if not user_input:
+#             continue
+
+#         # --- PIPELINE EXECUTION ---
+#         report = None
+#         error = None
+#         clean_text = ""
+
+#         def run_analysis():
+#             nonlocal report, error
+#             try:
+#                 report = engine.analyze(
+#                     clean_text, 
+#                     status_callback=spinner_ui.update_status
+#                 )
+#             except Exception as e:
+#                 error = e
+
+#         try:
+#             # Step 1: Cleaning
+#             spinner_ui.update_status("Cleaning text...")
+#             clean_text = cleaner.process(user_input)
+
+#             # Step 2: AI Inference
+#             spinner_ui.start()
+#             analysis_thread = threading.Thread(target=run_analysis)
+#             analysis_thread.start()
+#             analysis_thread.join()
+#             spinner_ui.stop()
+
+#             # Step 3: Result Display
+#             if error:
+#                 print(f"\n❌ ERROR: {error}")
+#             elif report:
+#                 print("\n" + "="*30 + " 📄 INTELLIGENCE REPORT " + "="*30)
+                
+#                 # Logic Summary
+#                 print(f"\n🧠 LOGIC SUMMARY: {report.reasoning_summary}\n")
+                
+#                 # Full JSON
+#                 print(report.model_dump_json(by_alias=True, indent=2))
+#                 print("="*80)
+                
+#                 # Performance
+#                 perf = report.performance
+#                 print(f"⏱️  PERFORMANCE: {perf.response_time_sec}s | {perf.throughput_ops_per_sec} ops/s")
+#                 print(f"💾  RESOURCES:   RAM: {perf.memory_usage_mb}MB | CPU: {perf.cpu_utilization_percent}%")
+#                 print("="*80 + "\n")
+
+#         except KeyboardInterrupt:
+#             spinner_ui.stop()
+#             print("\nAnalysis interrupted.")
+#             break
+
+# if __name__ == "__main__":
+#     run_interactive_pipeline()
+
+
+    
+
+    # Version 1.9
 import sys
 import threading
+import time
 import itertools
+import ollama
 from src.cleaning.cleaner import IntelCleaner
 from src.models.engine import IntelligenceEngine
 
-# --- UI UTILITIES ---
-
-class LoadingSpinner:
-    """Runs a spinner and timer in a separate thread to keep UI alive."""
+class Spinner:
     def __init__(self):
-        self.stop_event = threading.Event()
-        self.status_message = "Initializing..."
+        self.spinner = itertools.cycle(['⣾', '⣽', '⣻', '⢿', '⡿', '⣟', '⣯', '⣷'])
+        self.running = False
+        self.status = "Initializing..."
+        self._thread = None
         self.start_time = 0
-        self.thread = None
 
-    def _spin(self):
-        spinner = itertools.cycle(['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'])
-        while not self.stop_event.is_set():
+    def start(self):
+        self.running = True
+        self.start_time = time.time()
+        self._thread = threading.Thread(target=self._animate)
+        self._thread.start()
+
+    def stop(self):
+        self.running = False
+        if self._thread:
+            self._thread.join()
+        sys.stdout.write('\r' + ' ' * 80 + '\r')
+        sys.stdout.flush()
+
+    def update_status(self, new_status):
+        self.status = new_status
+
+    def _animate(self):
+        while self.running:
             elapsed = time.time() - self.start_time
-            sys.stdout.write(f"\r{next(spinner)} [{elapsed:.1f}s] {self.status_message}   ")
+            sys.stdout.write(f'\r{next(self.spinner)} [{elapsed:.1f}s] {self.status}')
             sys.stdout.flush()
             time.sleep(0.1)
 
-    def start(self):
-        self.stop_event.clear()
-        self.start_time = time.time()
-        self.thread = threading.Thread(target=self._spin)
-        self.thread.start()
+def get_available_models():
+    """Fetches list of models safely."""
+    try:
+        models_info = ollama.list()
+        # Handle different Ollama library versions (some use 'name', some 'model')
+        model_list = []
+        for m in models_info.get('models', []):
+            if 'name' in m:
+                model_list.append(m['name'])
+            elif 'model' in m:
+                model_list.append(m['model'])
+        return model_list
+    except Exception as e:
+        print(f"\n❌ Error fetching models: {e}")
+        return []
 
-    def update_status(self, msg):
-        """Updates the text next to the spinner"""
-        self.status_message = msg
-
-    def stop(self):
-        self.stop_event.set()
-        if self.thread:
-            self.thread.join()
-        sys.stdout.write("\r" + " "*60 + "\r") # Clear line
-        sys.stdout.flush()
-
-# --- MAIN LOGIC ---
-
-def select_model(engine):
-    print("\n🔍 Scanning for available Ollama models...")
-    models = engine.get_available_models()
-    if not models:
-        print("❌ No models found!")
-        return
+def select_model_menu(current_model):
+    print("\n🔍 Scanning for available Ollama models...\n")
+    models = get_available_models()
     
-    print(f"\nAvailable Models:")
+    if not models:
+        print("No models found via Ollama API.")
+        return None
+
+    print("Available Models:")
     for idx, name in enumerate(models, 1):
-        marker = "(*)" if name == engine.model else "   "
+        marker = "(*)" if name == current_model else "   "
         print(f"{idx}. {marker} {name}")
     
-    choice = input("\nSelect model number (Enter to cancel): ").strip()
-    if choice.isdigit() and 0 < int(choice) <= len(models):
-        engine.set_model(models[int(choice)-1])
-    else:
-        print("🚫 Cancelled.")
-
-def main():
-    print("⚙️  Initializing Engine...")
-    cleaner = IntelCleaner()
-    # Ensure qwen2.5:7b is pulled, or fallback to what you have
-    engine = IntelligenceEngine(model_name="qwen2.5:7b") 
+    print("")
+    choice = input("Select model number (Enter to cancel): ").strip()
     
-    print("-" * 80)
-    print("🔎 UNIFIED PROMPT FRAMEWORK - INTERACTIVE CONSOLE")
-    print("Commands: Type text to analyze | !model to switch | !exit to quit")
-    print("-" * 80)
+    if choice.isdigit():
+        choice_idx = int(choice) - 1
+        if 0 <= choice_idx < len(models):
+            return models[choice_idx]
+    
+    return None
 
-    spinner_ui = LoadingSpinner()
+def run_interactive_pipeline():
+    current_model = "qwen2.5:32b"
+    
+    print("\n" + "="*60)
+    print("🇮🇳  INDIAN INTELLIGENCE PIPELINE (v1.9) - STABLE")
+    print("="*60)
+    
+    cleaner = IntelCleaner()
+    engine = IntelligenceEngine(model_name=current_model)
+    spinner_ui = Spinner()
+    print(f"✅ Ready. Type '!model' to switch engines.\n")
 
     while True:
-        user_input = input(f"\n[{engine.model}] ➤ ").strip()
+        try:
+            user_input = input(f"[{current_model}] ➤ ").strip()
+        except KeyboardInterrupt:
+            print("\nShutting down.")
+            break
+
+        if user_input.lower() in ['exit', 'quit']:
+            break
         
-        if not user_input: continue
-        if user_input.lower() == "!exit": break
-        if user_input.lower() == "!model": 
-            select_model(engine)
+        if user_input.lower() == '!model':
+            new_model = select_model_menu(current_model)
+            if new_model and new_model != current_model:
+                current_model = new_model
+                print(f"\n🔄 Switching Engine to {current_model}...")
+                engine = IntelligenceEngine(model_name=current_model)
+                print(f"✅ Model updated.\n")
             continue
 
-        # --- PROCESS ---
+        if not user_input:
+            continue
+
         report = None
         error = None
+        clean_text = ""
 
-        # Wrapper to run engine in thread
         def run_analysis():
             nonlocal report, error
             try:
-                # We pass the spinner's update method as a callback
-                report = engine.analyze(
-                    clean_text, 
-                    status_callback=spinner_ui.update_status
-                )
+                report = engine.analyze(clean_text, status_callback=spinner_ui.update_status)
             except Exception as e:
                 error = e
 
         try:
-            # 1. Cleaning
-            print("🧹 Cleaning text...")
+            spinner_ui.update_status("Cleaning text...")
             clean_text = cleaner.process(user_input)
 
-            # 2. AI Inference (Threaded)
             spinner_ui.start()
             analysis_thread = threading.Thread(target=run_analysis)
             analysis_thread.start()
-            analysis_thread.join() # Wait for it to finish
+            analysis_thread.join()
             spinner_ui.stop()
 
-            # 3. Result Display
             if error:
-                print(f"❌ ERROR: {error}")
+                print(f"\n❌ ERROR: {error}")
             elif report:
                 print("\n" + "="*30 + " 📄 INTELLIGENCE REPORT " + "="*30)
+                print(f"\n🧠 LOGIC SUMMARY: {report.reasoning_summary}\n")
                 print(report.model_dump_json(by_alias=True, indent=2))
                 print("="*80)
                 
-                # Timing
                 perf = report.performance
-                print(f"⏱️  TIMING: AI Inference: {perf.response_time_sec}s | Memory: {perf.memory_usage_mb}MB")
-                print("="*80)
+                print(f"⏱️  PERFORMANCE: {perf.response_time_sec}s | {perf.throughput_ops_per_sec} ops/s")
+                print(f"💾  RESOURCES:   RAM: {perf.memory_usage_mb}MB | CPU: {perf.cpu_utilization_percent}%")
+                print("="*80 + "\n")
 
         except KeyboardInterrupt:
             spinner_ui.stop()
-            print("\n🚫 Operation Interrupted.")
+            print("\nAnalysis interrupted.")
+            break
 
 if __name__ == "__main__":
-    main()
+    run_interactive_pipeline()
