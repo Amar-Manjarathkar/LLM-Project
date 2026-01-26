@@ -1,0 +1,6 @@
+
+fastapi
+uvicorn[standard]
+gunicorn
+pydantic
+# Add your other dependencies here (ollama, etc.)

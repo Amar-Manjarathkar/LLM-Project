@@ -36,9 +36,9 @@ with col2:
     if submitted and raw_text:
         with st.spinner("Processing... (This may take 1-2 minutes)"):
             try:
-                # TIMEOUT SET TO 300 SECONDS (5 Minutes)
+                # TIMEOUT SET TO 600 SECONDS (10 Minutes) for 32B Model
                 payload = {"text": raw_text}
-                response = requests.post(API_URL, json=payload, timeout=300)
+                response = requests.post(API_URL, json=payload, timeout=600)
                 
                 if response.status_code == 200:
                     data = response.json()
